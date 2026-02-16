@@ -14,7 +14,7 @@ const app = express();
 
 // ──── Middleware ────
 // Enable CORS for the React frontend (Vite runs on port 5173 by default)
-app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:3000'], credentials: true }));
+app.use(cors({ origin: ['http://localhost:5173', 'https://smart-spend-expense-tracker-163vqok1g-hariskhan1613s-projects.vercel.app'], credentials: true }));
 // Parse JSON request bodies
 app.use(express.json());
 
