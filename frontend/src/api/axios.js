@@ -6,7 +6,7 @@ import axios from 'axios';
  * - An interceptor automatically attaches the JWT token from localStorage.
  */
 const API = axios.create({
-    baseURL: '/api',
+    baseURL: 'https://smartspend-expense-tracker-4cof.onrender.com/api',
 });
 
 // Request interceptor: attach Bearer token if available
