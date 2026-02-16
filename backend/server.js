@@ -1,43 +1,86 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const connectDB = require('./config/db');
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const connectDB = require("./config/db");
 
-// Load environment variables from .env file
+// Load environment variables
 dotenv.config();
 
-// Import route files
-const authRoutes = require('./routes/authRoutes');
-const transactionRoutes = require('./routes/transactionRoutes');
+// Import routes
+const authRoutes = require("./routes/authRoutes");
+const transactionRoutes = require("./routes/transactionRoutes");
 
 const app = express();
 
-// ──── Middleware ────
-// Enable CORS for the React frontend (Vite runs on port 5173 by default)
-app.use(cors({ origin: ['http://localhost:5173', 'https://smart-spend-expense-tracker-163vqok1g-hariskhan1613s-projects.vercel.app'], credentials: true }));
-// Parse JSON request bodies
+/* =========================
+   CORS CONFIGURATION
+   ========================= */
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (Postman, mobile apps)
+      if (!origin) return callback(null, true);
+
+      // Allow localhost and all Vercel deployments
+      if (
+        origin.startsWith("http://localhost") ||
+        origin.includes(".vercel.app")
+      ) {
+        return callback(null, true);
+      }
+
+      // Block everything else
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
+
+/* =========================
+   MIDDLEWARE
+   ========================= */
 app.use(express.json());
 
-// ──── Routes ────
-app.use('/api/auth', authRoutes);
-app.use('/api/transactions', transactionRoutes);
+/* =========================
+   ROUTES
+   ========================= */
+app.use("/api/auth", authRoutes);
+app.use("/api/transactions", transactionRoutes);
 
-// Health check route
-app.get('/api/health', (_req, res) => {
-    res.json({ status: 'ok', message: 'SmartSpend API is running 🚀' });
+/* =========================
+   HEALTH CHECK
+   ========================= */
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    message: "SmartSpend API is running 🚀",
+  });
 });
 
-// ──── Global error handler ────
-app.use((err, _req, res, _next) => {
-    console.error('Unhandled error:', err);
-    res.status(500).json({ message: 'Internal server error' });
+/* =========================
+   GLOBAL ERROR HANDLER
+   ========================= */
+app.use((err, req, res, next) => {
+  console.error("❌ Error:", err.message);
+
+  res.status(500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
 });
 
-// ──── Start server ────
+/* =========================
+   START SERVER
+   ========================= */
 const PORT = process.env.PORT || 5000;
 
-connectDB().then(() => {
+connectDB()
+  .then(() => {
     app.listen(PORT, () => {
-        console.log(`🚀 SmartSpend API server running on http://localhost:${PORT}`);
+      console.log(`🚀 Server running on port ${PORT}`);
     });
-});
+  })
+  .catch((err) => {
+    console.error("❌ Database connection failed:", err.message);
+    process.exit(1);
+  });
